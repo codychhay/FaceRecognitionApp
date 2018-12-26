@@ -65,14 +65,6 @@ class App extends Component {
         });
     }
 
-    // Testing to see the connection between front-end and server
-    // Test send request to server
-    // componentDidMount() {
-    //     fetch('http://localhost:3000')
-    //         .then (response => response.json())
-    //         .then(console.log);
-    // }
-
     // Calculate the location of face box
     calculateFaceBox = (data) => {
         const clarifaiBoundingBox = data.outputs[0].data.regions[0].region_info.bounding_box;
@@ -101,7 +93,26 @@ class App extends Component {
             .predict(
                 Clarifai.FACE_DETECT_MODEL,
                 this.state.inputUrl)
-            .then(response => this.setFacebox(this.calculateFaceBox(response)))
+            .then(response => {
+                // Call /image endpoint to update user entry submitted
+                fetch('http://localhost:3000/image', {
+                    method: 'put',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: this.state.user.id
+                    })
+                })
+                    .then(response => response.json())
+                    .then(userEntries => {
+                        // user object.assign to set entries property and doesn't intervene with other property
+                        this.setState(Object.assign(this.state.user, {entries: userEntries}));
+                    });
+
+                // Calcualte and set facebox
+                this.setFacebox(this.calculateFaceBox(response))
+            })
             .catch(err => console.log(err));
     };
 
@@ -122,13 +133,13 @@ class App extends Component {
                 <Particles className='particles' params={particlesOptions}/>
                 <Navigation onRouteChange={this.onRouteChange} isSignedIn={isSignedIn}/>
                 {route === 'signin'
-                    ? <Signin onRouteChange={this.onRouteChange}/>
+                    ? <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
                     : (
                         route === 'register'
                             ? <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
                             : <div>
                                 <Logo/>
-                                <Rank/>
+                                <Rank name={this.state.user.name} entries={this.state.user.entries}/>
                                 <ImageLinkForm
                                     onInputChange={this.onInputChange}
                                     onButtonSubmit={this.onButtonSubmit}/>
