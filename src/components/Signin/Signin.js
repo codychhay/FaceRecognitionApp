@@ -34,6 +34,8 @@ class Signin extends React.Component {
         })
             .then(response => response.json())
             .then(user => {
+                //Note : when sign in failed, json string of wrong info is returned, hence if(users) still evaluate to true.
+                // Hence, we check user.id instead, which ony evaluate to true when user object is returned.
                 if (user.id) {
                     this.props.loadUser(user);
                     this.props.onRouteChange('home');

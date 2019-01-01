@@ -10,6 +10,7 @@ import Signin from './components/Signin/Signin';
 import Register from './components/Register/Register';
 import Clarifai from 'clarifai';
 
+// Work around to not hard-code api key in source.
 let app;
 async function getKey() {
     const response = await fetch('http://localhost:3000/clarifaiApiKey');
@@ -33,24 +34,27 @@ const particlesOptions = {
     }
 };
 
+// Clear out cache of info every time we sign out
+const initialState = {
+    inputUrl: '',
+    imageUrl: '',
+    box: {},
+    route: 'signin',
+    isSignedIn: false,
+    user: {
+        id: '',
+        name: '',
+        email: '',
+        entries: 0,
+        joined: ''
+    }
+};
+
 class App extends Component {
 
     constructor() {
         super();
-        this.state = {
-            inputUrl: '',
-            imageUrl: '',
-            box: {},
-            route: 'signin',
-            isSignedIn: false,
-            user: {
-                id: '',
-                name: '',
-                email: '',
-                entries: 0,
-                joined: ''
-            }
-        }
+        this.state = initialState;
     }
 
     loadUser = (data) => {
@@ -120,7 +124,7 @@ class App extends Component {
         if (route === 'home') {
             this.setState({isSignedIn: true});
         } else if (route === 'signin') {
-            this.setState({isSignedIn: false});
+            this.setState(initialState);
         }
 
         this.setState({route: route});
