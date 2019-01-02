@@ -108,11 +108,12 @@ class App extends Component {
                         id: this.state.user.id
                     })
                 })
-                    .then(response => response.json())
-                    .then(userEntries => {
-                        // user object.assign to set entries property and doesn't intervene with other property
-                        this.setState(Object.assign(this.state.user, {entries: userEntries}));
-                    });
+                .then(response => response.json())
+                .then(userEntries => {
+                    // user object.assign to set entries property and doesn't intervene with other property
+                    this.setState(Object.assign(this.state.user, {entries: userEntries}));
+                })
+                .catch(console.log);
 
                 // Calcualte and set facebox
                 this.setFacebox(this.calculateFaceBox(response))
