@@ -8,18 +8,6 @@ import Rank from './components/Rank/Rank';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition' ;
 import Signin from './components/Signin/Signin';
 import Register from './components/Register/Register';
-import Clarifai from 'clarifai';
-
-// Work around to not hard-code api key in source.
-let app;
-async function getKey() {
-    const response = await fetch('http://localhost:3000/clarifaiApiKey');
-    const apiKey = await response.json();
-    app = new Clarifai.App({
-        apiKey
-    });
-}
-getKey();
 
 // Params config for particles
 const particlesOptions = {
@@ -93,11 +81,17 @@ class App extends Component {
 
     onButtonSubmit = () => {
         this.setState({imageUrl: this.state.inputUrl});
-        app.models
-            .predict(
-                Clarifai.FACE_DETECT_MODEL,
-                this.state.inputUrl)
-            .then(response => {
+        fetch('http://localhost:3000/apiCall', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inputUrl: this.state.inputUrl
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
                 // Call /image endpoint to update user entry submitted
                 fetch('http://localhost:3000/image', {
                     method: 'put',
@@ -116,7 +110,7 @@ class App extends Component {
                 .catch(console.log);
 
                 // Calcualte and set facebox
-                this.setFacebox(this.calculateFaceBox(response))
+                this.setFacebox(this.calculateFaceBox(data))
             })
             .catch(err => console.log(err));
     };
